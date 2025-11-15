@@ -5,6 +5,8 @@ from pathlib import Path
 from PIL import Image
 from pillow_heif import register_heif_opener
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import multiprocessing
 
 # Register HEIF opener with Pillow
 register_heif_opener()
@@ -111,14 +113,20 @@ class HEICConverterApp:
         self.results_text.config(state=tk.DISABLED)
         
     def convert_heic_to_png(self, heic_path, output_path=None):
-        """Convert a single HEIC file to PNG"""
+        """Convert a single HEIC file to PNG and delete the original HEIC"""
         try:
             if output_path is None:
                 output_path = heic_path.rsplit('.', 1)[0] + '.png'
             
             # Open and convert
             image = Image.open(heic_path)
-            image.save(output_path, "PNG")
+            image.save(output_path, "PNG", optimize=True)
+            
+            # Delete the original HEIC file after successful conversion
+            try:
+                os.remove(heic_path)
+            except Exception as e:
+                return True, f"{output_path} (Warning: Could not delete original: {str(e)})"
             
             return True, output_path
         except Exception as e:
@@ -140,7 +148,7 @@ class HEICConverterApp:
         thread.start()
         
     def _convert_folder_thread(self, folder_path):
-        """Thread worker for folder conversion"""
+        """Thread worker for folder conversion with parallel processing"""
         # Disable buttons during conversion
         self.folder_btn.config(state=tk.DISABLED)
         self.files_btn.config(state=tk.DISABLED)
@@ -163,23 +171,39 @@ class HEICConverterApp:
             return
             
         self.add_result(f"Found {len(heic_files)} HEIC file(s) to convert:\n")
+        self.add_result(f"Using parallel processing with {min(4, len(heic_files))} workers...\n")
         
-        # Convert each file
+        # Convert files in parallel using ThreadPoolExecutor
         success_count = 0
         fail_count = 0
         
-        for heic_file in heic_files:
-            filename = heic_file.name
-            self.update_status(f"Converting {filename}...", "blue")
+        # Use up to 4 workers for parallel processing (good balance for most systems)
+        max_workers = min(4, len(heic_files))
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all conversion tasks
+            future_to_file = {
+                executor.submit(self.convert_heic_to_png, str(heic_file)): heic_file 
+                for heic_file in heic_files
+            }
             
-            success, result = self.convert_heic_to_png(str(heic_file))
-            
-            if success:
-                success_count += 1
-                self.add_result(f"✓ {filename} → {Path(result).name}")
-            else:
-                fail_count += 1
-                self.add_result(f"✗ {filename} - Error: {result}")
+            # Process results as they complete
+            for future in as_completed(future_to_file):
+                heic_file = future_to_file[future]
+                filename = heic_file.name
+                
+                try:
+                    success, result = future.result()
+                    
+                    if success:
+                        success_count += 1
+                        self.add_result(f"✓ {filename} → {Path(result).name}")
+                    else:
+                        fail_count += 1
+                        self.add_result(f"✗ {filename} - Error: {result}")
+                except Exception as e:
+                    fail_count += 1
+                    self.add_result(f"✗ {filename} - Error: {str(e)}")
                 
         # Show completion message
         self.progress.stop()
@@ -187,6 +211,7 @@ class HEICConverterApp:
         summary = f"\n{'='*50}\n"
         summary += f"Conversion complete!\n"
         summary += f"Success: {success_count} | Failed: {fail_count}\n"
+        summary += f"Original HEIC files have been deleted.\n"
         summary += f"{'='*50}"
         self.add_result(summary)
         
@@ -194,13 +219,13 @@ class HEICConverterApp:
             self.update_status("All files converted successfully!", "green")
             messagebox.showinfo(
                 "Success",
-                f"Successfully converted {success_count} file(s) to PNG!"
+                f"Successfully converted {success_count} file(s) to PNG!\nOriginal HEIC files have been deleted."
             )
         else:
             self.update_status("Conversion completed with errors", "orange")
             messagebox.showwarning(
                 "Completed with Errors",
-                f"Converted {success_count} file(s).\n{fail_count} file(s) failed."
+                f"Converted {success_count} file(s).\n{fail_count} file(s) failed.\nOriginal HEIC files were deleted for successful conversions only."
             )
             
         # Re-enable buttons
@@ -229,7 +254,7 @@ class HEICConverterApp:
         thread.start()
         
     def _convert_files_thread(self, file_paths):
-        """Thread worker for file conversion"""
+        """Thread worker for file conversion with parallel processing"""
         # Disable buttons during conversion
         self.folder_btn.config(state=tk.DISABLED)
         self.files_btn.config(state=tk.DISABLED)
@@ -239,23 +264,39 @@ class HEICConverterApp:
         self.update_status("Converting files...", "blue")
         
         self.add_result(f"Converting {len(file_paths)} file(s):\n")
+        self.add_result(f"Using parallel processing with {min(4, len(file_paths))} workers...\n")
         
-        # Convert each file
+        # Convert files in parallel using ThreadPoolExecutor
         success_count = 0
         fail_count = 0
         
-        for file_path in file_paths:
-            filename = Path(file_path).name
-            self.update_status(f"Converting {filename}...", "blue")
+        # Use up to 4 workers for parallel processing (good balance for most systems)
+        max_workers = min(4, len(file_paths))
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all conversion tasks
+            future_to_file = {
+                executor.submit(self.convert_heic_to_png, file_path): file_path 
+                for file_path in file_paths
+            }
             
-            success, result = self.convert_heic_to_png(file_path)
-            
-            if success:
-                success_count += 1
-                self.add_result(f"✓ {filename} → {Path(result).name}")
-            else:
-                fail_count += 1
-                self.add_result(f"✗ {filename} - Error: {result}")
+            # Process results as they complete
+            for future in as_completed(future_to_file):
+                file_path = future_to_file[future]
+                filename = Path(file_path).name
+                
+                try:
+                    success, result = future.result()
+                    
+                    if success:
+                        success_count += 1
+                        self.add_result(f"✓ {filename} → {Path(result).name}")
+                    else:
+                        fail_count += 1
+                        self.add_result(f"✗ {filename} - Error: {result}")
+                except Exception as e:
+                    fail_count += 1
+                    self.add_result(f"✗ {filename} - Error: {str(e)}")
                 
         # Show completion message
         self.progress.stop()
@@ -263,6 +304,7 @@ class HEICConverterApp:
         summary = f"\n{'='*50}\n"
         summary += f"Conversion complete!\n"
         summary += f"Success: {success_count} | Failed: {fail_count}\n"
+        summary += f"Original HEIC files have been deleted.\n"
         summary += f"{'='*50}"
         self.add_result(summary)
         
@@ -270,13 +312,13 @@ class HEICConverterApp:
             self.update_status("All files converted successfully!", "green")
             messagebox.showinfo(
                 "Success",
-                f"Successfully converted {success_count} file(s) to PNG!"
+                f"Successfully converted {success_count} file(s) to PNG!\nOriginal HEIC files have been deleted."
             )
         else:
             self.update_status("Conversion completed with errors", "orange")
             messagebox.showwarning(
                 "Completed with Errors",
-                f"Converted {success_count} file(s).\n{fail_count} file(s) failed."
+                f"Converted {success_count} file(s).\n{fail_count} file(s) failed.\nOriginal HEIC files were deleted for successful conversions only."
             )
             
         # Re-enable buttons

@@ -37,6 +37,11 @@ env/
 Thumbs.db
 desktop.ini
 
+# PyInstaller build files
+*.spec
+build/
+dist/
+
 # Test files
 *.heic
 *.HEIC
