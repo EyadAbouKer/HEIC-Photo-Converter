@@ -1,6 +1,6 @@
-# HEIC to PNG Converter
+# HEIC Image Converter
 
-A simple and user-friendly Windows application to convert HEIC (High Efficiency Image Container) images to PNG format.
+A simple and user-friendly Windows application to convert HEIC (High Efficiency Image Container) images to PNG or JPEG format.
 
 ## 🎯 Quick Start
 
@@ -17,11 +17,13 @@ A simple and user-friendly Windows application to convert HEIC (High Efficiency 
 
 ## Features
 
+- 🎨 **Dual Format Support**: Convert to PNG (lossless) or JPEG (adjustable quality)
 - 📁 **Batch Conversion**: Select a folder and convert all HEIC images at once
 - 🖼️ **Selective Conversion**: Choose one or multiple specific HEIC files to convert
-- 🎨 **Modern GUI**: Clean and intuitive interface built with tkinter
+- 🎛️ **Quality Control**: JPEG quality slider (50-100) for size vs. quality balance
+- 🎯 **Modern GUI**: Clean and intuitive interface built with tkinter
 - ⚡ **Parallel Processing**: Up to 4 simultaneous conversions for faster performance
-- 🚀 **Optimized Output**: PNG files are optimized for smaller file sizes
+- 🚀 **Optimized Output**: Files are optimized for best quality/size ratio
 - 🗑️ **Auto-Cleanup**: Original HEIC files are automatically deleted after successful conversion
 - 📊 **Progress Tracking**: Real-time status updates and conversion results
 - ✅ **Error Handling**: Detailed feedback for successful and failed conversions
@@ -56,35 +58,46 @@ python heic_converter.py
 
 ### Converting Images
 
-**Option 1: Convert Entire Folder**
+**Step 1: Choose Output Format**
+- **JPEG** (Default): Compressed format (smaller files)
+  - Adjustable quality slider (50-100)
+  - Default: 95 for high quality
+- **PNG**: Lossless format with transparency support (larger files)
+
+**Step 2: Select Conversion Method**
+
+**Option A: Convert Entire Folder**
 1. Click the "📁 Convert Folder" button
 2. Select a folder containing HEIC images
 3. The app will automatically find and convert all HEIC files in that folder
-4. Converted PNG files will be saved in the same location
+4. Converted files will be saved in the same location
 5. ⚠️ **Original HEIC files will be deleted** after successful conversion
 
-**Option 2: Convert Selected Files**
+**Option B: Convert Selected Files**
 1. Click the "🖼️ Convert Selected Files" button
 2. Select one or multiple HEIC files from your file system
-3. The selected files will be converted to PNG format
-4. Converted PNG files will be saved in the same location
+3. The selected files will be converted to your chosen format
+4. Converted files will be saved in the same location
 5. ⚠️ **Original HEIC files will be deleted** after successful conversion
 
 ### Supported Formats
 
 - Input: `.heic`, `.HEIC`, `.heif`, `.HEIF`
-- Output: `.png`
+- Output: `.png`, `.jpg` (JPEG)
 
 ## How It Works
 
 1. The application uses the `pillow-heif` library to register HEIF format support with Pillow (PIL)
-2. When you select files or a folder, the app scans for HEIC images
-3. Up to 4 HEIC images are processed simultaneously using parallel threading for faster conversion
-4. Each HEIC image is opened and converted to optimized PNG format
-5. The converted PNG file is saved with the same filename (different extension) in the same directory
-6. **Original HEIC files are automatically deleted** after successful conversion
-7. Progress and results are displayed in real-time
-8. If a conversion fails, the original HEIC file is preserved
+2. You select your desired output format (PNG or JPEG) and quality settings
+3. When you select files or a folder, the app scans for HEIC images
+4. Up to 4 HEIC images are processed simultaneously using parallel threading for faster conversion
+5. Each HEIC image is opened and converted to your chosen format:
+   - **PNG**: Optimized lossless conversion with transparency support
+   - **JPEG**: Quality-controlled compression (RGB conversion for images with transparency)
+6. The converted file is saved with the same filename (different extension) in the same directory
+7. **Original HEIC files are automatically deleted** after successful conversion
+8. Progress and results are displayed in real-time
+9. If a conversion fails, the original HEIC file is preserved
 
 ## Troubleshooting
 
@@ -140,13 +153,15 @@ For detailed build instructions, see [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.
 ## Future Enhancements
 
 Possible improvements for future versions:
-- Support for additional output formats (JPEG, WebP, etc.)
+- ✅ ~~Support for JPEG output format with quality control~~ (Implemented!)
+- Support for additional output formats (WebP, AVIF, etc.)
 - Batch rename options
-- Image quality settings
+- Image resize/scale options
 - Drag-and-drop functionality
 - Conversion history
 - Custom application icon
 - Code signing for trusted distribution
+- Preview before conversion
 
 ## Contributing
 

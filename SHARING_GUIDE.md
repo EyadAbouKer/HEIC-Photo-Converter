@@ -1,4 +1,4 @@
-# 📤 How to Share HEIC Photo Converter
+# 📤 How to Share HEIC Image Converter
 
 Your application has been successfully compiled into a standalone executable! Here's everything you need to know about sharing it with others.
 
@@ -7,9 +7,15 @@ Your application has been successfully compiled into a standalone executable! He
 **Location**: `dist/HEIC_Converter.exe`
 
 **File Details**:
+- Version: 2.0.0
 - Size: ~23 MB
 - Type: Windows Executable (.exe)
 - Requirements: Windows 10+ (64-bit)
+
+**New in Version 2.0**:
+- PNG and JPEG output format selection
+- Adjustable JPEG quality slider (50-100)
+- Automatic format handling for transparent images
 
 ## ✅ Easiest Way to Share
 
@@ -27,13 +33,16 @@ Simply send the file `HEIC_Converter.exe` to anyone you want to share with:
 Share these simple instructions with your recipients:
 
 ```
-HEIC to PNG Converter - How to Use
+HEIC Image Converter v2.0 - How to Use
 
 1. Download HEIC_Converter.exe to your computer
 2. Double-click the file to run it
-3. Choose "Convert Folder" or "Convert Selected Files"
-4. Select your HEIC images
-5. Done! PNG files will be created in the same location
+3. Choose output format (JPEG is default):
+   - JPEG: Compressed, smaller files (adjust quality slider) [DEFAULT]
+   - PNG: Lossless, larger files (good for images with transparency)
+4. Choose "Convert Folder" or "Convert Selected Files"
+5. Select your HEIC images
+6. Done! Converted files will be created in the same location
 
 ⚠️ IMPORTANT: Original HEIC files will be deleted after conversion!
 Make sure you have backups if needed.
